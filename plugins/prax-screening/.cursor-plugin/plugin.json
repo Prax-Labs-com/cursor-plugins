@@ -1,7 +1,7 @@
 {
   "name": "prax-screening",
   "displayName": "Prax Screening",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "minClientVersions": {
     "cursor": "3.13.0"
   },

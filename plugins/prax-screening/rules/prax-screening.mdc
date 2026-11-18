@@ -1,45 +1,49 @@
 ---
-description: Screen every counterparty, identifier and dependency with the prax MCP tools before code or a workflow pays, signs, ships or onboards. Applies whenever a bank identifier, IBAN, payee, company, country, e-mail domain, IP, ISIN, CVE, package version, 0x address or tx hash appears in the task.
-alwaysApply: true
+description: Use the prax MCP tools when the user is paying, wiring, onboarding, trading, patching or shipping and the task contains a concrete identifier to check (BIC, IBAN, LEI, company, country, e-mail domain, IP, ISIN, CVE, package version, 0x address, tx hash). Not for general coding.
+alwaysApply: false
 ---
 
-# Prax screening (always on)
+# Prax screening
 
-The `prax` MCP server (Prax Data Services) is installed. Use it without being asked whenever one of the triggers below appears in the prompt, a file, a config, a fixture, a log or a diff. Screening costs one credit per lookup; do not re-screen the same value within a session.
+The `prax` MCP server (Prax Data Services) is installed. It is read-only intelligence: lookups return a verdict with reasons and references. It never signs, pays or changes code.
 
-## Triggers
+## Scope
 
-| You see | Call |
+Call a Prax tool only when both hold:
+
+1. The task is about money, counterparties or security: a payment or wire, vendor or customer onboarding, a trade, a dependency upgrade, a vulnerability ticket, a suspicious sender or login.
+2. There is a concrete identifier in the task to check. Send the identifier only (the BIC, the name, the CVE id, the package and version). Never send file contents, secrets, credentials or personal data beyond the name being screened.
+
+Do not screen values that merely appear in unrelated code, tests or logs. If in doubt, ask the user before calling.
+
+| Identifier | Tool |
 | --- | --- |
-| BIC (8 or 11 chars, e.g. DEUTDEFF), IBAN, 9-digit US routing number, LEI | `screen_bank` (add `beneficiary_name` when the payee is known) |
-| A person, company or vessel being paid, onboarded or allow-listed; any export or technology-transfer counterparty | `screen_entity` (sanctions and US export controls) |
-| A company paid for the first time, or whose bank details change | `screen_company` and `screen_adverse_media`; on a payment-instruction change also `screen_domain` on the sender's e-mail |
-| A bank, fintech, MSB or exchange being onboarded as vendor, partner or correspondent | `screen_enforcement` and `screen_licence` |
-| A country as corridor, supplier location, customer residence or destination | `screen_country` |
-| A link, domain or e-mail address in anything that moves money or credentials | `screen_domain` |
-| An IP address in a login, session, API caller or alert | `screen_ip` |
-| ISIN, CUSIP, SEDOL or ticker about to be traded, custodied or taken as collateral | `screen_securities` |
-| A CVE or advisory id in a ticket, vendor notice or questionnaire | `screen_cve` |
-| A dependency added or upgraded; a lock file, SBOM or vendor stack under review | `screen_package` (one) or `screen_packages` (up to 50) |
-| EVM address (`0x` + 40 hex) anywhere | `screen_wallet` |
-| Code that sends value (transfer, approve, swap, withdraw, payout, bridge) | `screen_transfer` on the concrete from/to/asset; otherwise add a pre-sign `screen_transfer` call to the code path and say so |
-| A transaction hash | `analyze_transaction` |
-| Many addresses (CSV, payout file, export) | `screen_wallets_batch` / `screen_transfers_batch` in chunks of 50 |
-
-Never skip a check because a value "looks like" a known exchange, bank or protocol. Look-alike and address-poisoning attacks depend on exactly that.
+| BIC, IBAN, 9-digit US routing number, LEI in a payment or supplier record | `screen_bank` (add `beneficiary_name` when known) |
+| Person, company or vessel being paid, onboarded or allow-listed | `screen_entity` (sanctions and US export controls) |
+| Company paid for the first time, or whose bank details changed | `screen_company`, `screen_adverse_media`; on a payment-instruction change also `screen_domain` on the sender's e-mail |
+| Bank, fintech, MSB or exchange being onboarded | `screen_enforcement`, `screen_licence` |
+| Country as payment corridor or counterparty location | `screen_country` |
+| Domain or e-mail address in a request that moves money or credentials | `screen_domain` |
+| IP address in a suspicious login, session or alert | `screen_ip` |
+| ISIN, CUSIP, SEDOL or ticker about to be traded or custodied | `screen_securities` |
+| CVE or advisory id in a ticket or vendor notice | `screen_cve` |
+| Dependency being added or upgraded, or an SBOM under review | `screen_package` (one), `screen_packages` (up to 50) |
+| EVM address or contract the user is about to pay or integrate | `screen_wallet` |
+| A transfer the user is about to sign | `screen_transfer` |
+| Transaction hash under investigation | `analyze_transaction` |
 
 ## Reporting
 
-One line with the verdict and the reason, then the evidence Prax returned, then the action:
+One line with the verdict and the reason, then the evidence Prax returned, then a recommendation. Never change code, configuration or payment data on the strength of a verdict; recommend and let the user decide.
 
-- `block` / `critical`: do not pay, sign, ship or integrate. Name the list or label and the reference. In code, stop and ask before adding the value anywhere.
-- `review` / `high` / `elevated`: proceed only with the user's explicit confirmation. Name the exact check that failed.
+- `block` / `critical`: recommend not paying, signing, shipping or integrating. Name the list or label and the reference.
+- `review` / `high` / `elevated`: recommend the user confirm before proceeding. Name the exact check that failed.
 - `allow` / `low` / `standard`: say what it resolved to and continue.
-- `unknown` / `not_found`: Prax has no record. For a licence or registry check this is absence from the registries covered, not proof of anything.
-- `status: upgrade_required`: the tool is not enabled on the account. Say so, point to https://mcp.orabrain.com/portal/billing, and continue with the tools that work.
+- `unknown` / `not_found`: Prax has no record. For a registry check this is absence from the registries covered, not proof of anything.
+- `status: upgrade_required`: the tool is not enabled on the account. Say so and continue with the tools that work.
 
 Quote Prax's `story` verbatim when short. Never invent risk reasons Prax did not return. Name "Prax" as the source. The `prax-screening` skill has the per-tool reporting rules.
 
-## Not connected
+## Credits and connection
 
-If the `prax` tools are missing or return 401: open Cursor Settings, then Tools & MCP, find **prax** and click to log in. It opens mcp.orabrain.com (free account, no card); approve and retry.
+Each lookup costs one credit (batches ten); do not re-screen the same value in a session. If the `prax` tools are missing or return 401: open Cursor Settings, then Tools & MCP, find **prax** and log in. It opens mcp.orabrain.com (free account, no card).

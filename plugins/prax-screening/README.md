@@ -1,6 +1,6 @@
 # Prax Screening
 
-Cursor plugin that connects the agent to [Prax Data Services](https://mcp.orabrain.com/?src=cursor), the security and compliance intelligence server for financial-services teams, and makes it screen every counterparty **before** code or a workflow pays, signs, ships or onboards. Verdicts come with reasons and references, never a bare score.
+Cursor plugin that connects the agent to [Prax Data Services](https://mcp.orabrain.com/?src=cursor), the security and compliance intelligence server for financial-services teams, so it can screen a counterparty, identifier or dependency **before** the user pays, signs, ships or onboards. Verdicts come with reasons and references, never a bare score.
 
 ## Install
 
@@ -47,14 +47,15 @@ The hosted server is the source of truth for tool names and schemas. `screen_cou
 
 ## Components
 
-- **Rule** `rules/prax-screening.mdc` (always on): the triggers that call for a screen, how to report a verdict, what to do when the server is not connected.
+- **Rule** `rules/prax-screening.mdc` (applied by description, not always-on): the scope in which a screen is appropriate, what is sent (the identifier only), how to report a verdict, what to do when the server is not connected. Set `alwaysApply: true` in your own copy if you want it on for every chat.
 - **Skill** `skills/prax-screening/SKILL.md`: per-tool reporting rules.
 - **Commands** `/screen <value>` and `/screen-repo` (every 0x address and direct dependency in the repo, in batches).
 
 ## Notes
 
 - Lookups cost 1 credit, batches 10. The free plan includes 10 credits a day; paid plans unlock the company, adverse-media, domain / IP, securities and package tools (`status: upgrade_required` names the gap).
-- Prax is read-only intelligence: it never moves funds, signs anything or changes your code.
+- Prax is read-only intelligence: it never moves funds, signs anything or changes your code. The rule tells the agent to recommend, never to edit code or payment data on its own.
+- Data sent: only the identifier being screened (a BIC, a name, a CVE id, a package and version). Lookups are metered to your account; see the data terms on the portal.
 - Output is licensed for use inside your own product; no resale, redistribution or training. Terms: https://mcp.orabrain.com/portal/terms
 
 ## Docs

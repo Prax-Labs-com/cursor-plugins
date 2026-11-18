@@ -11,7 +11,7 @@
     {
       "name": "prax-screening",
       "source": "plugins/prax-screening",
-      "description": "Screen banks, wires, counterparties, countries, domains, IPs, securities, dependencies and wallets before you pay, sign, ship or onboard. Prax Data Services MCP plus always-on screening rules."
+      "description": "Screen banks, wires, counterparties, countries, domains, IPs, securities, dependencies and wallets before you pay, sign, ship or onboard. Prax Data Services MCP plus a scoped screening rule, skill and /screen commands."
     }
   ]
 }

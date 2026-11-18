@@ -5,14 +5,14 @@ description: Screen counterparties before paying, signing, onboarding or integra
 
 # Prax screening
 
-You have the `prax` MCP server (Prax Data Services). Use it proactively: the user should not have to ask.
+You have the `prax` MCP server (Prax Data Services), read-only intelligence with reasons and references. Use it when the task is about money, counterparties or security and contains a concrete identifier to check. Send only that identifier: never file contents, secrets, credentials or personal data beyond the name being screened. Do not screen values that merely appear in unrelated code, tests or logs; ask the user if in doubt. Prax never signs, pays or changes code, and neither should you on the strength of a verdict: recommend, and let the user decide.
 
-## When to screen (do it without being asked)
+## When to screen
 
 - A BIC (8 or 11 letters/digits, e.g. DEUTDEFF), an IBAN, a 9-digit US routing number or an LEI appears: a wire instruction, supplier record, invoice, settlement config → `screen_bank` (add `beneficiary_name` when the payee is known, `name`/`country` when only the bank name is known).
 - A bank, fintech, payment company, MSB, crypto exchange or person is being onboarded as a vendor, partner, correspondent or customer → `screen_enforcement` (regulatory history) and `screen_licence` (is it registered / licensed and where), plus `screen_entity` for sanctions.
-- An EVM address (`0x` + 40 hex) appears anywhere: a prompt, a file, a config, a test fixture, a log → `screen_wallet`.
-- The task writes or changes code that **sends value** (transfer, approve, swap, withdraw, payout, bridge) → `screen_transfer` on the concrete `from`/`to`/`asset` when known; otherwise add a pre-sign `screen_transfer` call to the code path and say so.
+- An EVM address (`0x` + 40 hex) the user is about to pay, approve or integrate → `screen_wallet`.
+- A transfer the user is about to sign (transfer, approve, swap, withdraw, payout, bridge) → `screen_transfer` on the concrete `from`/`to`/`asset`. If the code path has no pre-sign check, say so as a recommendation; do not add calls to the user's code unasked.
 - A token or contract address is being integrated (ABI, SDK, allow-list) → `screen_wallet` on the contract.
 - A person, company or vessel is being onboarded, paid, or added to a list → `screen_entity` (name), and `screen_entity` on any address they provided. `screen_entity` also covers US export controls (BIS Entity List, Denied Persons, Unverified, Military End User; State nonproliferation and ITAR debarred; OFAC non-SDN lists), so run it for any export, shipment or technology-transfer counterparty too.
 - A country comes up as a payment corridor, supplier location, customer residence or shipping destination → `screen_country` (FATF, EU high-risk, FinCEN 311, OFAC comprehensive programmes, export-control footprint).
@@ -26,18 +26,18 @@ You have the `prax` MCP server (Prax Data Services). Use it proactively: the use
 - The user asks "what's happening", "any incidents", "new threats" → `get_alerts` (Business plan) or `search`.
 - Many addresses (CSV, payout file, customer export) → `screen_wallets_batch` / `screen_transfers_batch` in chunks of 50.
 
-Never skip screening because the address "looks like" an exchange or a known protocol: that is exactly what look-alike and address-poisoning attacks rely on.
+Within scope, do not skip a check because a value "looks like" a known exchange, bank or protocol: look-alike and address-poisoning attacks rely on exactly that.
 
 ## How to report
 
 Lead with the verdict and the reason in one line, then the evidence Prax returned, then what to do:
 
-- `screen_bank`: `block` → do not release the wire; name the list (FATF call for action, FinCEN 311, sanctions hit on the bank or beneficiary). `review` → release only with the user's confirmation; name the reason (grey-listed jurisdiction, EU high-risk country, recent enforcement, unresolved BIC, invalid checksum). `allow` → say "resolved to <legal name> (GLEIF), no list or enforcement signal" and continue.
+- `screen_bank`: `block` → recommend not releasing the wire; name the list (FATF call for action, FinCEN 311, sanctions hit on the bank or beneficiary). `review` → release only with the user's confirmation; name the reason (grey-listed jurisdiction, EU high-risk country, recent enforcement, unresolved BIC, invalid checksum). `allow` → say "resolved to <legal name> (GLEIF), no list or enforcement signal" and continue.
 - `screen_enforcement`: list the actions newest first with authority, date and link; never summarise an action beyond its title. `screen_licence`: report every registration found with authority and status, and say which registries were covered; `not_found` is absence from those registries, not proof the firm is unlicensed; `flagged` means a national authority has named the firm as non-compliant: treat as a block for onboarding.
 - `screen_company`: `block` on `listed` or `inactive` (dissolved, in liquidation); `review` when `not_found` (ask for the legal name, number or LEI) or on flags (new incorporation, no officers, overdue filings, recent enforcement); say which registry answered. `screen_adverse_media`: list the headlines with date, source and link; never paraphrase an allegation as fact. `screen_domain` / `screen_ip`: `block` on a malware, botnet or hijacked-netblock hit; `review` on a new domain, missing SPF / DMARC, disposable domain, Tor exit or listed hosting country, and say exactly which check failed. `screen_securities`: `block` on NS-CMIC or a sanctions hit (no purchase or sale), `review` on sectoral sanctions, a trading suspension or an unresolved identifier.
 - `screen_cve`: `exploited` means CISA KEV lists it, treat as patch-now with the due date quoted; `known` with critical / high severity or EPSS above 0.5 is next; `unknown` means verify the id. `screen_package`: `block` on a KEV or critical advisory at that version (do not ship; upgrade to the fixed version named), `review` otherwise, `allow` when no advisory covers the version; always name the advisory ids and fixed versions.
 - `screen_country`: `high` → do not proceed without a sanctions/export licence review; `elevated` → enhanced due diligence on the counterparty; `standard` → note it and continue. Always quote the list and the as-of date.
-- `critical` / `BLOCK` → do not pay, sign or integrate. Say which label (e.g. "Phishing wallet", "Exploit attacker wallet", "Sanctioned address") and the reference. If the task was code, stop and ask before adding the address anywhere.
+- `critical` / `BLOCK` → recommend not paying, signing or integrating. Say which label (e.g. "Phishing wallet", "Exploit attacker wallet", "Sanctioned address") and the reference. If the task was code, stop and ask before adding the address anywhere.
 - `high` / `REVIEW` → proceed only with the user's explicit confirmation; name the exposure ("Exposed to OFAC sanctions, 1 hop").
 - `low` / `ALLOW` → say "known <entity>, not flagged" and continue.
 - `unknown` → say Prax has no record; for value transfers recommend a `screen_transfer` pre-sign check and the first-hop exposure result if present.
