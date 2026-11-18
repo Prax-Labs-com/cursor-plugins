@@ -1,0 +1,54 @@
+{
+  "name": "prax-screening",
+  "displayName": "Prax Screening",
+  "version": "1.4.0",
+  "minClientVersions": {
+    "cursor": "3.13.0"
+  },
+  "description": "Screen banks, wires, counterparties, countries, domains, IPs, securities, dependencies and wallets before you pay, sign, ship or onboard.",
+  "author": {
+    "name": "Prax Labs",
+    "email": "sales@prax-labs.com"
+  },
+  "publisher": "Prax Labs",
+  "homepage": "https://mcp.orabrain.com/?src=cursor",
+  "repository": "https://github.com/Prax-Labs-com/cursor-plugins",
+  "license": "MIT",
+  "logo": "assets/logo.png",
+  "keywords": [
+    "aml",
+    "kyt",
+    "kyb",
+    "sanctions",
+    "ofac",
+    "export-controls",
+    "wire-screening",
+    "bank-screening",
+    "adverse-media",
+    "enforcement",
+    "msb",
+    "country-risk",
+    "domain-screening",
+    "securities",
+    "cve",
+    "sbom",
+    "dependency-security",
+    "wallet-screening",
+    "web3",
+    "compliance",
+    "fraud",
+    "fintech",
+    "mcp"
+  ],
+  "category": "integrations",
+  "tags": [
+    "compliance",
+    "security",
+    "finance",
+    "mcp"
+  ],
+  "mcpServers": "./mcp.json",
+  "rules": "./rules/",
+  "skills": "./skills/",
+  "commands": "./commands/"
+}

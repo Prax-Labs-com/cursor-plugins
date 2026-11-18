@@ -1,0 +1,17 @@
+{
+  "name": "prax-labs",
+  "owner": {
+    "name": "Prax Labs",
+    "email": "sales@prax-labs.com"
+  },
+  "metadata": {
+    "description": "Security and compliance tools for financial-services agents by Prax Labs"
+  },
+  "plugins": [
+    {
+      "name": "prax-screening",
+      "source": "plugins/prax-screening",
+      "description": "Screen banks, wires, counterparties, countries, domains, IPs, securities, dependencies and wallets before you pay, sign, ship or onboard. Prax Data Services MCP plus always-on screening rules."
+    }
+  ]
+}
